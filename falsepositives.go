@@ -61,4 +61,5 @@ var DefaultFalsePositives = []string{
 	"tysongay",
 	"wass",
 	"wharfage",
+	"button",
 }

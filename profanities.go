@@ -5,6 +5,11 @@ package goaway
 // Note that some words that would normally be in this list may be in DefaultFalseNegatives
 var DefaultProfanities = []string{
 	"anal",
+	"orgasm",
+	"xanax",
+	"valium",
+	"viagra",
+	"cialis",
 	"anus",
 	"arse",
 	"ass",

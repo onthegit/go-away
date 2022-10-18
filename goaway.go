@@ -1,6 +1,7 @@
 package goaway
 
 import (
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -26,6 +27,7 @@ type ProfanityDetector struct {
 	sanitizeSpecialCharacters bool
 	sanitizeLeetSpeak         bool
 	sanitizeAccents           bool
+	exactWord                 bool
 
 	profanities    []string
 	falseNegatives []string
@@ -65,6 +67,11 @@ func (g *ProfanityDetector) WithSanitizeAccents(sanitize bool) *ProfanityDetecto
 	return g
 }
 
+func (g *ProfanityDetector) WithExactWord(exact bool) *ProfanityDetector {
+	g.exactWord = exact
+	return g
+}
+
 // WithCustomDictionary allows configuring whether the sanitization process should also take into account
 // custom profanities, false positives and false negatives dictionaries.
 func (g *ProfanityDetector) WithCustomDictionary(profanities, falsePositives, falseNegatives []string) *ProfanityDetector {
@@ -80,7 +87,7 @@ func (g *ProfanityDetector) IsProfane(s string) bool {
 	return (g.IsProfaneString(s) != "")
 }
 
-//IsProfaneString takes in a string (word or sentence) and look for profanities.
+// IsProfaneString takes in a string (word or sentence) and look for profanities.
 // Returns non-empty string of the first found profanity.
 func (g *ProfanityDetector) IsProfaneString(s string) string {
 	s = g.sanitize(s)
@@ -94,12 +101,22 @@ func (g *ProfanityDetector) IsProfaneString(s string) string {
 	for _, word := range g.falsePositives {
 		s = strings.Replace(s, word, "", -1)
 	}
-	// Check for profanities
-	for _, word := range g.profanities {
-		if match := strings.Contains(s, word); match {
-			return word
+
+	if g.exactWord {
+		for _, word := range g.profanities {
+			if match, _ := regexp.MatchString("\\b"+regexp.QuoteMeta(word)+"\\b", s); match {
+				return word
+			}
+		}
+	} else {
+		// Check for profanities
+		for _, word := range g.profanities {
+			if match := strings.Contains(s, word); match {
+				return word
+			}
 		}
 	}
+
 	return ""
 }
 
