@@ -366,3 +366,66 @@ func TestSanitizeWithoutSanitizingLeetSpeak(t *testing.T) {
 		t.Errorf("Expected '%s', got '%s'", expectedString, sanitizedString)
 	}
 }
+
+func TestSentencesWithExactWords(t *testing.T) {
+	profanities := []string{"butt", "idiot"}
+	sentences := []string{
+		"You smell like butt!",
+		"Watch the movie,idiot!",
+		"Watch the movie, idiot!",
+		"Watch the movie.Butt!",
+	}
+	tests := []struct {
+		name   string
+		goAway *ProfanityDetector
+	}{
+		// {
+		// 	name:   "With Default Dictionary",
+		// 	goAway: NewProfanityDetector().WithExactWord(true),
+		// },
+		{
+			name:   "With Custom Dictionary",
+			goAway: NewProfanityDetector().WithCustomDictionary(profanities, DefaultFalsePositives, DefaultFalseNegatives).WithExactWord(true),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, s := range sentences {
+				if !tt.goAway.IsProfane(s) {
+					t.Error("Expected true, got false from sentence", s)
+				}
+			}
+		})
+	}
+}
+
+func TestSentencesWithExactWordsClean(t *testing.T) {
+	profanities := []string{"butt", "idiot"}
+	sentences := []string{
+		"watch the movie idiotcracy!",
+		"Watch the movie buttizer!",
+		"Watch the movie, idiotica!",
+	}
+	tests := []struct {
+		name   string
+		goAway *ProfanityDetector
+	}{
+		// {
+		// 	name:   "With Default Dictionary",
+		// 	goAway: NewProfanityDetector().WithExactWord(true),
+		// },
+		{
+			name:   "With Custom Dictionary",
+			goAway: NewProfanityDetector().WithCustomDictionary(profanities, DefaultFalsePositives, DefaultFalseNegatives).WithExactWord(true),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, s := range sentences {
+				if tt.goAway.IsProfane(s) {
+					t.Error("Expected false, got true from sentence", s)
+				}
+			}
+		})
+	}
+}
